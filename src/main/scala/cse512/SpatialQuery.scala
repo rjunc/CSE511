@@ -63,4 +63,46 @@ object SpatialQuery extends App{
 
     return resultDf.count()
   }
+
+  def ST_Contains(queryRectangle:String, pointString:String): Boolean = {
+
+    // split the rectangle string into individual coordinates
+    val recArr = queryRectangle.split(",");
+
+    // first point
+    val x1 = recArr(0).toDouble;
+    val y1 = recArr(1).toDouble;
+
+    // second point
+    val x2 = recArr(2).toDouble;
+    val y2 = recArr(3).toDouble;
+
+    // point under test
+    val point = pointString.split(",")
+    val pointx = point(0).toDouble;
+    val pointy = point(1).toDouble;
+
+    return x1 <= pointx && pointx <= x2 &&
+           y1 <= pointy && pointy <= y2;
+  }
+
+  def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean ={
+    // split the rectangle string into individual coordinates
+    val recArr = pointString1.split(",");
+
+    // point1
+    val point1 = pointString1.split(",")
+    val x1 = point1(0).toDouble;
+    val y1 = point1(1).toDouble;
+
+    // point2
+    val point2 = pointString2.split(",")
+    val x2 = point2(0).toDouble;
+    val y2 = point2(1).toDouble;
+
+    // distance formulat √((x2-x1)^2 + (y2-y1)^2)
+    val distanceFromAtoB = Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1,2))
+
+    return distanceFromAtoB <= distance;
+  }
 }
