@@ -9,7 +9,7 @@ object SpatialQuery extends App{
     pointDf.createOrReplaceTempView("point")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Contains",(queryRectangle:String, pointString:String)=>((true)))
+    spark.udf.register("ST_Contains", ST_Contains)
 
     val resultDf = spark.sql("select * from point where ST_Contains('"+arg2+"',point._c0)")
     resultDf.show()
@@ -26,7 +26,7 @@ object SpatialQuery extends App{
     rectangleDf.createOrReplaceTempView("rectangle")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Contains",(queryRectangle:String, pointString:String)=>((true)))
+    spark.udf.register("ST_Contains", ST_Contains)
 
     val resultDf = spark.sql("select * from rectangle,point where ST_Contains(rectangle._c0,point._c0)")
     resultDf.show()
@@ -40,7 +40,7 @@ object SpatialQuery extends App{
     pointDf.createOrReplaceTempView("point")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Within",(pointString1:String, pointString2:String, distance:Double)=>((true)))
+    spark.udf.register("ST_Within", ST_Within)
 
     val resultDf = spark.sql("select * from point where ST_Within(point._c0,'"+arg2+"',"+arg3+")")
     resultDf.show()
@@ -57,14 +57,14 @@ object SpatialQuery extends App{
     pointDf2.createOrReplaceTempView("point2")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Within",(pointString1:String, pointString2:String, distance:Double)=>((true)))
+    spark.udf.register("ST_Within",ST_Within)
     val resultDf = spark.sql("select * from point1 p1, point2 p2 where ST_Within(p1._c0, p2._c0, "+arg3+")")
     resultDf.show()
 
     return resultDf.count()
   }
 
-  def ST_Contains(queryRectangle:String, pointString:String): Boolean = {
+  val ST_Contains = (queryRectangle:String, pointString:String) => {
 
     // split the rectangle string into individual coordinates
     val recArr = queryRectangle.split(",");
@@ -82,11 +82,11 @@ object SpatialQuery extends App{
     val pointx = point(0).toDouble;
     val pointy = point(1).toDouble;
 
-    return x1 <= pointx && pointx <= x2 &&
+    x1 <= pointx && pointx <= x2 &&
            y1 <= pointy && pointy <= y2;
   }
 
-  def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean ={
+  val ST_Within = (pointString1:String, pointString2:String, maxDistance:Double) => {
     // split the rectangle string into individual coordinates
     val recArr = pointString1.split(",");
 
@@ -103,6 +103,6 @@ object SpatialQuery extends App{
     // distance formulat √((x2-x1)^2 + (y2-y1)^2)
     val distanceFromAtoB = Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1,2))
 
-    return distanceFromAtoB <= distance;
+    distanceFromAtoB <= maxDistance;
   }
 }
